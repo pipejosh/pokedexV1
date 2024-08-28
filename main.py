@@ -1,49 +1,36 @@
 import requests
-import csv
-from inflect import *
-import re
+import base64
 from pyfiglet import figlet_format
 from tabulate import tabulate
 from sys import exit
 
 
-class Pokedex():
+class Pokedex:
+
+    # Serves for getting user input connecting with API and return all pokemon info 
 
     def __init__(self, pokemonId):
 
-        
-         
+        # Contains all of the pokemon data in variables
+
         self.pokemonID = pokemonId
         self.pokemonInfo = self.getPokemonInfo()
-
-        # Pokemon characteristics
-
         self.pokemonId = self.pokemonInfo['id']
         self.pokemonName = self.pokemonInfo['name'].capitalize()
-        self.pokemonHeight = f'{self.pokemonInfo['height'] * 10} cm'
-        self.pokemonWeight = f'{int(self.pokemonInfo['weight'] // 10)} kg'
-
-        # self.pokemonTypes
-
-        types = [t['type']['name'].capitalize() for t in self.pokemonInfo['types']]
-        self.pokemonTypes = ' / '.join(types)
-
-        # self.pokemonTypes
-
-        # self.pokemonAbilities
-        
-        abilities = [a['ability']['name'].capitalize() for a in self.pokemonInfo['abilities']]
-        self.pokemonAbilities = ' / '.join(abilities)
-
+        self.pokemonHeight = f'{self.pokemonInfo["height"] * 10} cm'
+        self.pokemonWeight = f'{int(self.pokemonInfo["weight"] // 10)} kg'
+        self.pokemonTypes = ' / '.join([t['type']['name'].capitalize() for t in self.pokemonInfo['types']])
+        self.pokemonAbilities = ' / '.join([a['ability']['name'].capitalize() for a in self.pokemonInfo['abilities']])
         self.pokemonWeaknesses = self.getPokemonWeaknesses()
         self.pokemonImage = self.pokemonInfo['sprites']['front_default']
         self.pokemonGeneration = self.getPokemonGeneration()
 
-        # self.pokemonAbilities
 
-        # Pokemon characteristics
 
     def getPokemonWeaknesses(self):
+
+        # Calculates the pokemon weaknesses (api does not provide this info)
+
         weaknesses = set()
         for typeInfo in self.pokemonInfo['types']:
             typeUrl = typeInfo['type']['url']
@@ -54,7 +41,7 @@ class Pokedex():
     
     def getPokemonGeneration(self):
 
-        # Asignar rangos de ID a generaciones
+        # Assignates the generation of the pokemon in base of the pokemon id (api does not provide this info)
 
         if 1 <= self.pokemonId <= 151:
             return 'Generation I'
@@ -78,70 +65,84 @@ class Pokedex():
             return 'Unknown Generation'
 
     def getPokemonInfo(self):
+
+        # Conncect to the api and return the pokemon .json info
+
         url = f'https://pokeapi.co/api/v2/pokemon/{self.pokemonID}'
+
         pokemonInfo = requests.get(url)
         
         if pokemonInfo.status_code == 200:
             return pokemonInfo.json()
-        elif pokemonInfo.status_code == 404:
-            raise ValueError('Pokemon not found')
+        
         else:
-            raise Exception(f"Error fetching data: {pokemonInfo.status_code}")
+            raise ValueError(f"Error fetching data: {pokemonInfo.status_code}")
         
     def __str__(self):
 
-        return f'''
-        ID: {self.pokemonId}\n
-        Generation: {self.pokemonGeneration}\n
-        Name: {self.pokemonName}\n
-        Height: {self.pokemonHeight}\n
-        Weight: {self.pokemonWeight}\n
-        Type: {self.pokemonTypes}\n
-        Abilities: {self.pokemonAbilities}\n
-        Weaknesses: {self.pokemonWeaknesses}\n
-        Image: {self.pokemonImage}
-        '''
+        # Returns the pokemon stats
+
+        return (
+            f'ID: {self.pokemonId}\n'
+            f'Generation: {self.pokemonGeneration}\n'
+            f'Name: {self.pokemonName}\n'
+            f'Height: {self.pokemonHeight}\n'
+            f'Weight: {self.pokemonWeight}\n'
+            f'Type: {self.pokemonTypes}\n'
+            f'Abilities: {self.pokemonAbilities}\n'
+            f'Weaknesses: {self.pokemonWeaknesses}\n'
+            f'Image: {self.pokemonImage}'
+        )
         
     @staticmethod
     def getPokemonId():
+
+        # Get the user input and return the class with that id or pokemon name
 
         while True:
         
             try:    
             
-                pokemonId = int(input('Enter the pokemon ID: '))
-
+                pokemonId = input('Enter the pokemon ID or name: ').lower()
 
                 return Pokedex(pokemonId)
 
             except ValueError:
 
                 print('\nPokemon does not exist\n')
-                
-                
-            
-        
+
+
+
+class EncryptDecrypt:
+
+    def encryptMessage(self, message):
+
+        messageEncode = message.encode('utf-8')
+
+        encodedMessage = base64.b16encode(messageEncode)  
+
+        return encodedMessage.decode('utf-8')  
+
+    def decryptMessage(self, encodedMessage):
+
+        decodedMessage = base64.b16decode(encodedMessage)  
+
+        return decodedMessage.decode('utf-8') 
+
+
 
 def main(): 
 
     userOption = userInterface()
 
-    if userOption == 1:
+    userOptions = {
+        1:quickSearch,
+        2:addFavoritePokemons,
+        3:importFavoritePokemons,
+        4:exitPokedex
+                   }
 
-        quickSearch()
-
-    elif userOption == 2:
-
-        addFavoritePokemons()
-
-    elif userOption == 3:
-
-        importFavoritePokemons()
-
-    else:
-
-        exit('Thanks for using Pokedex V1')
-
+    userOptions.get(userOption, exitPokedex)()
 
 def userInterface():
 
@@ -149,7 +150,9 @@ def userInterface():
 
     print(title)
 
-    name = input('Please enter your name: ')
+    global name
+
+    name = input('Please enter your name: ').capitalize()
 
     print(f'\nHello {name} thanks for using Pokedex V1\n')
 
@@ -165,15 +168,19 @@ def userInterface():
 
     option = input('Enter a valid option: ')
 
+
     while option not in ['1','2','3','4']:
 
-        option = input('Please enter a valid option: ')    
+        print()
+
+    
+        option = input('Please enter a valid option: ')
+
+        
 
     return int(option)
 
 def quickSearch():
-
-    global pokedex
 
     print()
 
@@ -183,17 +190,85 @@ def quickSearch():
 
 def addFavoritePokemons():
 
+    encryptDecrypt = EncryptDecrypt()
+
     favoritePokemons = []
+
+    print("\nWelcome you'll be prompt to write your favorite pokemon id")
+
 
     exitPorgram = True
 
+    i = 0
+
     while exitPorgram:
 
-        print(pokedex)
+        i += 1
+
+        print()
+
+        pokedex = Pokedex.getPokemonId()
+
+        favoritePokemons.append([i,pokedex.pokemonName])
+
+        print(f'\n{pokedex.pokemonName} has been added to favorites succesfully!\n')
+
+        if input('Add another pokemon (y/n): ').strip().lower() != 'y':
+
+            exitPorgram = False
+
+    head = ['#', 'Name']
+
+    print(f"\n{name}'s favorite Pokemons\n")
+
+    print(tabulate(favoritePokemons, headers = head))
+
+    fileName = input('\nPlease enter the file name to export your list: ')
+
+    with open(f'{fileName}.txt' , 'w') as outputFile:
+
+        encryptedName = encryptDecrypt.encryptMessage(f"{name}'s favorites Pokemons\n")
+
+        outputFile.write(encryptedName + '\n')
+
+        for list in favoritePokemons:
+                
+                encryptedData = encryptDecrypt.encryptMessage(f'{str(list[0])}: {list[1]}\n')
+                
+                outputFile.write(encryptedData + '\n')
 
 def importFavoritePokemons():
 
-    pass
+    decryptMessage = EncryptDecrypt()
+
+    fileName = input('\nPlese enter your file name or path: ')
+
+    try:
+
+        with open(fileName) as inputFile:
+
+            for line in inputFile:
+
+                decryptedLine = decryptMessage.decryptMessage(line.strip())
+
+                print(decryptedLine)
+
+
+    except FileNotFoundError:
+
+        print(f'\nThe file {fileName} does not exist')
+
+        importFavoritePokemons()
+
+    
+
+
+def exitPokedex():
+
+    exit('Thanks for using Pokedex V1')
+
+
+
 
 if __name__ == '__main__':
      
