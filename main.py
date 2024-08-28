@@ -7,7 +7,7 @@ from sys import exit
 
 class Pokedex:
 
-    # Serves for getting user input connecting with API and return all pokemon info 
+    # Serves for getting user input connecting with API and return all pokemon infoc 
 
     def __init__(self, pokemonId):
 
@@ -83,15 +83,15 @@ class Pokedex:
         # Returns the pokemon stats
 
         return (
-            f'ID: {self.pokemonId}\n'
-            f'Generation: {self.pokemonGeneration}\n'
-            f'Name: {self.pokemonName}\n'
-            f'Height: {self.pokemonHeight}\n'
-            f'Weight: {self.pokemonWeight}\n'
-            f'Type: {self.pokemonTypes}\n'
-            f'Abilities: {self.pokemonAbilities}\n'
-            f'Weaknesses: {self.pokemonWeaknesses}\n'
-            f'Image: {self.pokemonImage}'
+            f'  Name: {self.pokemonName}\n'
+            f'  ID: {self.pokemonId}\n'
+            f'  Generation: {self.pokemonGeneration}\n'
+            f'  Height: {self.pokemonHeight}\n'
+            f'  Weight: {self.pokemonWeight}\n'
+            f'  Type: {self.pokemonTypes}\n'
+            f'  Abilities: {self.pokemonAbilities}\n'
+            f'  Weaknesses: {self.pokemonWeaknesses}\n'
+            f'  Image: {self.pokemonImage}'
         )
         
     @staticmethod
@@ -139,9 +139,10 @@ def main():
         1:quickSearch,
         2:addFavoritePokemons,
         3:importFavoritePokemons,
-        4:exitPokedex
-                   }
+        4:viewPokemonStatistics,
+        5:exitPokedex
 
+                   }
     userOptions.get(userOption, exitPokedex)()
 
 def userInterface():
@@ -159,7 +160,8 @@ def userInterface():
     tableInfo = [['1', 'Quick search'],
                  ['2', 'Add favorite Pokemons'],
                  ['3', 'Import Favorite Pokemons'],
-                 ['4', 'Exit Pokedex']]
+                 ['4', 'View pokemon statistics'],
+                 ['5', 'Exit Pokedex']]
     
     head = ['#','Option']
     
@@ -238,29 +240,74 @@ def addFavoritePokemons():
                 outputFile.write(encryptedData + '\n')
 
 def importFavoritePokemons():
-
     decryptMessage = EncryptDecrypt()
-
-    fileName = input('\nPlese enter your file name or path: ')
+    fileName = input('\nPlease enter your file name or path: ')
 
     try:
-
         with open(fileName) as inputFile:
+            favoritePokemons = []
+            userName = None  
 
             for line in inputFile:
-
                 decryptedLine = decryptMessage.decryptMessage(line.strip())
+                
+              
+                if not userName and 'favorites Pokemons' in decryptedLine:
+                    userName = decryptedLine.split("'s favorites Pokemons")[0]
+                    continue
 
-                print(decryptedLine)
+              
+                if ':' in decryptedLine:
+                    num, name = decryptedLine.split(': ')
+                    favoritePokemons.append([num, name.strip()])
+         
+            headers = ['#', 'Name']
+            if userName:
+                print(f"\n{userName}'s Favorite Pokemons (Imported)\n")
+            else:
+                print("\nFavorite Pokemons (Imported)\n")
 
+            
+            print(tabulate(favoritePokemons, headers = headers))
 
+        return favoritePokemons
+    
     except FileNotFoundError:
-
         print(f'\nThe file {fileName} does not exist')
-
         importFavoritePokemons()
 
+def viewPokemonStatistics():
+
+    favoritePokemons = importFavoritePokemons()
+
+    if not favoritePokemons:
+
+        print('No Pokémon data available.')
+
+        return
     
+    headers = ['#', 'Name']
+
+    print('\nFavorite Pokémon List:\n')
+
+    print(tabulate(favoritePokemons, headers=headers))
+
+    try:
+        option = int(input('\nEnter the number of the Pokémon you want to see the statistics for: '))
+
+        if 1 <= option <= len(favoritePokemons):
+
+            pokemonName = favoritePokemons[option - 1][1]
+
+            pokedex = Pokedex(pokemonName.lower())
+
+            print(f'\n{pokedex}')
+
+        else:
+            print('Invalid option.')
+
+    except ValueError:
+        print('Invalid input. Please enter a number.')
 
 
 def exitPokedex():
