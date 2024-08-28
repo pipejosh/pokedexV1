@@ -1,3 +1,6 @@
+
+# Imports all the necesary libraries iin orden to run the program
+
 import requests
 import base64
 from pyfiglet import figlet_format
@@ -24,8 +27,6 @@ class Pokedex:
         self.pokemonWeaknesses = self.getPokemonWeaknesses()
         self.pokemonImage = self.pokemonInfo['sprites']['front_default']
         self.pokemonGeneration = self.getPokemonGeneration()
-
-
 
     def getPokemonWeaknesses(self):
 
@@ -112,10 +113,13 @@ class Pokedex:
                 print('\nPokemon does not exist\n')
 
 
-
 class EncryptDecrypt:
 
+    # Serves for both encrypting and decrypting messages using the library base64
+
     def encryptMessage(self, message):
+
+        # Encrypts the original message
 
         messageEncode = message.encode('utf-8')
 
@@ -125,6 +129,8 @@ class EncryptDecrypt:
 
     def decryptMessage(self, encodedMessage):
 
+        # Decrypt the message
+
         decodedMessage = base64.b16decode(encodedMessage)  
 
         return decodedMessage.decode('utf-8') 
@@ -132,6 +138,8 @@ class EncryptDecrypt:
 
 
 def main(): 
+
+    # Main function 
 
     userOption = userInterface()
 
@@ -141,11 +149,13 @@ def main():
         3:importFavoritePokemons,
         4:viewPokemonStatistics,
         5:exitPokedex
-
                    }
+    
     userOptions.get(userOption, exitPokedex)()
 
 def userInterface():
+
+    # User interface that serves for the "frontend" of this app
 
     title = figlet_format('Pokedex  V 1', font = 'slant')
 
@@ -175,14 +185,13 @@ def userInterface():
 
         print()
 
-    
         option = input('Please enter a valid option: ')
-
-        
 
     return int(option)
 
 def quickSearch():
+
+    # 1rst function serves for a quick pokemon search using the pokedex class
 
     print()
 
@@ -192,12 +201,13 @@ def quickSearch():
 
 def addFavoritePokemons():
 
+    # 2nd function serves for adding pokemons to a certain list and exporting that file in a .txt format (encripted) 
+
     encryptDecrypt = EncryptDecrypt()
 
     favoritePokemons = []
 
-    print("\nWelcome you'll be prompt to write your favorite pokemon id")
-
+    print("\nWelcome you'll be prompt to write your favorite pokemon ID or name")
 
     exitPorgram = True
 
@@ -240,32 +250,45 @@ def addFavoritePokemons():
                 outputFile.write(encryptedData + '\n')
 
 def importFavoritePokemons():
+
+    # 3rd function serves for importing the pokemon list from other user and the main function decrypt the encrypted list 
+
     decryptMessage = EncryptDecrypt()
     fileName = input('\nPlease enter your file name or path: ')
 
     try:
+
         with open(fileName) as inputFile:
+
             favoritePokemons = []
+
             userName = None  
 
             for line in inputFile:
                 decryptedLine = decryptMessage.decryptMessage(line.strip())
-                
               
                 if not userName and 'favorites Pokemons' in decryptedLine:
+
                     userName = decryptedLine.split("'s favorites Pokemons")[0]
+
                     continue
 
               
                 if ':' in decryptedLine:
+
                     num, name = decryptedLine.split(': ')
+
                     favoritePokemons.append([num, name.strip()])
          
             headers = ['#', 'Name']
+
             if userName:
+
                 print(f"\n{userName}'s Favorite Pokemons (Imported)\n")
+
             else:
-                print("\nFavorite Pokemons (Imported)\n")
+
+                print('\nFavorite Pokemons (Imported)\n')
 
             
             print(tabulate(favoritePokemons, headers = headers))
@@ -273,10 +296,14 @@ def importFavoritePokemons():
         return favoritePokemons
     
     except FileNotFoundError:
+
         print(f'\nThe file {fileName} does not exist')
+
         importFavoritePokemons()
 
 def viewPokemonStatistics():
+
+    # 4rd function serves for viewing a certain pokemon statistic in the decrypted imported list 
 
     favoritePokemons = importFavoritePokemons()
 
@@ -293,6 +320,7 @@ def viewPokemonStatistics():
     print(tabulate(favoritePokemons, headers=headers))
 
     try:
+
         option = int(input('\nEnter the number of the Pokémon you want to see the statistics for: '))
 
         if 1 <= option <= len(favoritePokemons):
@@ -304,20 +332,23 @@ def viewPokemonStatistics():
             print(f'\n{pokedex}')
 
         else:
+
             print('Invalid option.')
 
     except ValueError:
+
         print('Invalid input. Please enter a number.')
 
 
 def exitPokedex():
 
+    # 5th function it just exit the pokedex usin a sys.exit()
+
     exit('Thanks for using Pokedex V1')
 
-
-
-
 if __name__ == '__main__':
+     
+    #  Serves for calling the main function if the file is run by a user 
      
      main()
         
