@@ -167,10 +167,10 @@ def userInterface():
 
     print(f'\nHello {name} thanks for using Pokedex V1\n')
 
-    tableInfo = [['1', 'Quick search'],
-                 ['2', 'Add favorite Pokemons'],
+    tableInfo = [['1', 'Quick Search'],
+                 ['2', 'Add Favorite Pokemons'],
                  ['3', 'Import Favorite Pokemons'],
-                 ['4', 'View pokemon statistics'],
+                 ['4', 'View Pokemon Statistics'],
                  ['5', 'Exit Pokedex']]
     
     head = ['#','Option']
@@ -181,7 +181,7 @@ def userInterface():
     option = input('Enter a valid option: ')
 
 
-    while option not in ['1','2','3','4']:
+    while option not in ['1','2','3','4','5']:
 
         print()
 
@@ -272,7 +272,6 @@ def importFavoritePokemons():
                     userName = decryptedLine.split("'s favorites Pokemons")[0]
 
                     continue
-
               
                 if ':' in decryptedLine:
 
@@ -290,7 +289,6 @@ def importFavoritePokemons():
 
                 print('\nFavorite Pokemons (Imported)\n')
 
-            
             print(tabulate(favoritePokemons, headers = headers))
 
         return favoritePokemons
@@ -300,6 +298,7 @@ def importFavoritePokemons():
         print(f'\nThe file {fileName} does not exist')
 
         importFavoritePokemons()
+
 
 def viewPokemonStatistics():
 
@@ -315,7 +314,7 @@ def viewPokemonStatistics():
     
     headers = ['#', 'Name']
 
-    print('\nFavorite Pokémon List:\n')
+    print('\nFavorite Pokemon List:\n')
 
     print(tabulate(favoritePokemons, headers=headers))
 
@@ -344,7 +343,7 @@ def exitPokedex():
 
     # 5th function it just exit the pokedex usin a sys.exit()
 
-    exit('Thanks for using Pokedex V1')
+    exit('\nThanks for using Pokedex V1')
 
 if __name__ == '__main__':
      
